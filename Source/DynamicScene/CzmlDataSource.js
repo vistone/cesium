@@ -1,5 +1,6 @@
 /*global define*/
-define(['../Core/ClockRange',
+define([
+        '../Core/ClockRange',
         '../Core/ClockStep',
         '../Core/DeveloperError',
         '../Core/Event',
@@ -8,16 +9,16 @@ define(['../Core/ClockRange',
         './DynamicClock',
         './processCzml',
         './DynamicObjectCollection'
-        ], function(
-                ClockRange,
-                ClockStep,
-                DeveloperError,
-                Event,
-                Iso8601,
-                loadJson,
-                DynamicClock,
-                processCzml,
-                DynamicObjectCollection) {
+    ], function(
+        ClockRange,
+        ClockStep,
+        DeveloperError,
+        Event,
+        Iso8601,
+        loadJson,
+        DynamicClock,
+        processCzml,
+        DynamicObjectCollection) {
     "use strict";
 
     function loadCzml(dataSource, czml, sourceUri) {
@@ -46,6 +47,15 @@ define(['../Core/ClockRange',
             clock.currentTime = clock.startTime;
             clock.clockStep = ClockStep.SYSTEM_CLOCK_MULTIPLIER;
         }
+
+        if (typeof dataSource._name === 'undefined') {
+            if (typeof documentObject !== 'undefined') {
+                //dataSource._name = documentObject.name;
+            } else {
+                dataSource._name = sourceUri.substr(sourceUri.lastIndexOf('/') + 1);
+            }
+        }
+
         return clock;
     }
 
@@ -53,13 +63,27 @@ define(['../Core/ClockRange',
      * A {@link DataSource} which processes CZML.
      * @alias CzmlDataSource
      * @constructor
+     *
+     * @param {String} [name] The name of this data source.  If undefined, a name will be read from the
+     *                        loaded CZML document, or the name of the CZML file.
      */
-    var CzmlDataSource = function() {
+    var CzmlDataSource = function(name) {
+        this._name = name;
         this._changed = new Event();
         this._error = new Event();
         this._clock = undefined;
         this._dynamicObjectCollection = new DynamicObjectCollection();
         this._timeVarying = true;
+    };
+
+    /**
+     * Gets the name of this data source.
+     * @memberof CzmlDataSource
+     *
+     * @returns {String} The name.
+     */
+    CzmlDataSource.prototype.getName = function() {
+        return this._name;
     };
 
     /**
