@@ -63,10 +63,7 @@ define([
         function render() {
             try {
                 if (viewer._useDefaultRenderLoop) {
-                    var frameNumber = viewer._cesiumWidget._scene.getFrameState().frameNumber;
-                    if (viewer._needResize || (frameNumber % 60) === 0) {
-                        viewer.resize();
-                    }
+                    viewer.resize();
                     viewer.render();
                     requestAnimationFrame(render);
                 } else {
@@ -196,14 +193,6 @@ Either specify options.imageryProvider instead or set options.baseLayerPicker to
             contextOptions : options.contextOptions,
             useDefaultRenderLoop : false
         });
-
-        //Subscribe for resize events and set the initial size.
-        var that = this;
-        this._needResize = true;
-        this._resizeCallback = function() {
-            that._needResize = true;
-        };
-        window.addEventListener('resize', this._resizeCallback, false);
 
         var dataSourceCollection = new DataSourceCollection();
         this._dataSourceCollection = dataSourceCollection;
@@ -602,7 +591,8 @@ Either specify options.imageryProvider instead or set options.baseLayerPicker to
      * @memberof Viewer
      */
     Viewer.prototype.resize = function() {
-        this._needResize = false;
+        var cesiumWidget = this._cesiumWidget;
+        cesiumWidget.resize();
 
         var container = this._container;
         var width = container.clientWidth;
@@ -610,9 +600,6 @@ Either specify options.imageryProvider instead or set options.baseLayerPicker to
         if (width === this._lastWidth && height === this._lastHeight) {
             return;
         }
-
-        var cesiumWidget = this._cesiumWidget;
-        cesiumWidget.resize();
 
         var baseLayerPickerDropDown = this._baseLayerPickerDropDown;
         if (typeof baseLayerPickerDropDown !== 'undefined') {
